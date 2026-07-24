@@ -1,7 +1,7 @@
 app_name = "di"
 app_title = "Digital Invoicing"
 app_publisher = "kodlyft"
-app_description = "FBR Digital Invoicing & POS Fiscal Integration for ERPNext"
+app_description = "FBR Digital Invoicing Integration for ERPNext"
 app_email = "hello@kodlyft.com"
 app_license = "mit"
 
@@ -46,7 +46,6 @@ doctype_js = {
 	"Sales Invoice": "public/js/doctype/sales_invoice.js",
 	"Purchase Invoice": "public/js/doctype/purchase_invoice.js",
 	"Item": "public/js/doctype/item.js",
-	"POS Profile": "public/js/doctype/pos_profile.js",
 }
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}

@@ -4,7 +4,7 @@ FBR Digital Invoicing and POS Fiscal integration for ERPNext.
 
 This app integrates Pakistan's Federal Board of Revenue (FBR) Digital Invoicing
 System (PRAL DI API v1.12) and POS Fiscal services with ERPNext so teams can
-submit, validate, and track tax-compliant invoices inside their ERP workflow. You can find the documentation [here](https://docs.kodlyft.com/digital-invoicing/introduction)
+submit, validate, and track tax-compliant invoices inside their ERP workflow.
 
 ## Highlights
 
@@ -30,7 +30,7 @@ submit, validate, and track tax-compliant invoices inside their ERP workflow. Yo
 
 ```bash
 cd $PATH_TO_YOUR_BENCH
-bench get-app https://github.com/kodlyft/di --branch develop
+bench get-app https://github.com/username/di --branch develop
 bench setup requirements
 bench --site your-site.com install-app di
 bench --site your-site.com migrate
@@ -144,7 +144,3 @@ review, and CodeQL scanning.
 
 GitHub releases are built from version tags that match `v*`. Release notes are
 generated automatically from the tagged changes.
-
-## License
-
-[MIT](LICENSE)

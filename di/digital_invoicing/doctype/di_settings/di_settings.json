@@ -14,13 +14,6 @@
   "di_api_tab",
   "di_api_section",
   "access_token",
-  "pos_fiscal_tab",
-  "pos_fiscal_section",
-  "enable_pos_fiscal",
-  "pos_id",
-  "column_break_pos",
-  "pos_bearer_token",
-  "pos_environment",
   "company_info_tab",
   "company_info_section",
   "ntn_cnic",
@@ -91,46 +84,6 @@
    "fieldname": "access_token",
    "fieldtype": "Password",
    "label": "Access Token (Bearer)"
-  },
-  {
-   "fieldname": "pos_fiscal_tab",
-   "fieldtype": "Tab Break",
-   "label": "POS Fiscal"
-  },
-  {
-   "fieldname": "pos_fiscal_section",
-   "fieldtype": "Section Break",
-   "label": "POS Fiscal Configuration"
-  },
-  {
-   "default": "0",
-   "fieldname": "enable_pos_fiscal",
-   "fieldtype": "Check",
-   "label": "Enable POS Fiscal"
-  },
-  {
-   "depends_on": "eval:doc.enable_pos_fiscal",
-   "fieldname": "pos_id",
-   "fieldtype": "Data",
-   "label": "FBR POS ID"
-  },
-  {
-   "fieldname": "column_break_pos",
-   "fieldtype": "Column Break"
-  },
-  {
-   "depends_on": "eval:doc.enable_pos_fiscal",
-   "fieldname": "pos_bearer_token",
-   "fieldtype": "Password",
-   "label": "POS Bearer Token"
-  },
-  {
-   "default": "Sandbox",
-   "depends_on": "eval:doc.enable_pos_fiscal",
-   "fieldname": "pos_environment",
-   "fieldtype": "Select",
-   "label": "POS Environment",
-   "options": "Sandbox\nProduction"
   },
   {
    "fieldname": "company_info_tab",

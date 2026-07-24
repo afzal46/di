@@ -18,14 +18,7 @@ def before_submit(doc, method=None):
 	if not settings:
 		return
 
-	if cint(doc.is_pos) and doc.pos_profile:
-		profile = frappe.get_doc("POS Profile", doc.pos_profile)
-		if cint(getattr(profile, "enable_fbr_integration", 0)):
-			_validate_pos_items(doc)
-			from di.integrations.pos_fiscal import fiscalize_invoice
-
-			fiscalize_invoice(doc)
-			return
+	if cint(doc.is_pos):
 		return
 
 	if doc.customer and not cint(frappe.db.get_value("Customer", doc.customer, "enable_digital_invoicing")):
@@ -42,33 +35,18 @@ def before_submit(doc, method=None):
 def _validate_di_items(doc):
 	"""Validate that items have required DI fields."""
 	for item in doc.items:
-		if not item.get("di_hs_code"):
+		if not item.get("hs_code"):
 			frappe.throw(
 				_("Row {0}: HS Code is required for Digital Invoicing (Item: {1})").format(
 					item.idx, item.item_name
 				)
 			)
 
-		sale_type = item.get("di_sale_type") or ""
+		sale_type = item.get("sales_type") or ""
 		if sale_type in SRO_REQUIRED_SALE_TYPES:
-			if not item.get("di_sro_serial_no") and not item.get("di_schedule_no"):
+			if not item.get("sro_serial_no") and not item.get("schedule_no"):
 				frappe.throw(
 					_(
 						"Row {0}: SRO Serial No or Schedule No is required for sale type '{1}' (Item: {2})"
 					).format(item.idx, sale_type, item.item_name)
 				)
-
-
-def _validate_pos_items(doc):
-	"""Validate POS items have required fields for FBR fiscal."""
-	for item in doc.items:
-		item_code = item.get("item_code")
-		if not item_code:
-			continue
-		pct_code = frappe.db.get_value("Item", item_code, "customs_tariff_number")
-		if not pct_code:
-			frappe.throw(
-				_(
-					"Row {0}: Item {1} is missing Customs Tariff Number (PCT Code) required for FBR POS."
-				).format(item.idx, item.item_name)
-			)

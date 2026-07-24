@@ -26,7 +26,7 @@ def before_submit(doc, method=None):
 def _validate_items(doc):
 	"""Validate that items have required DI fields."""
 	for item in doc.items:
-		if not item.get("di_hs_code"):
+		if not item.get("hs_code"):
 			frappe.throw(
 				_("Row {0}: HS Code is required for Digital Invoicing (Item: {1})").format(
 					item.idx, item.item_name

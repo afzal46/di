@@ -20,10 +20,10 @@ frappe.ui.form.on("Sales Invoice", {
 });
 
 frappe.ui.form.on("Sales Invoice Item", {
-	di_sale_type(frm, cdt, cdn) {
+	sales_type(frm, cdt, cdn) {
 		let row = locals[cdt][cdn];
-		if (row.di_sale_type && row.item_code) {
-			frappe.model.set_value(cdt, cdn, "di_sale_type", row.di_sale_type);
+		if (row.sales_type && row.item_code) {
+			frappe.model.set_value(cdt, cdn, "sales_type", row.sales_type);
 		}
 	}
 });
@@ -84,12 +84,12 @@ function _apply_di_visibility(frm, show) {
 
 function _toggle_di_item_fields(frm, show) {
 	let fields = [
-		"di_hs_code",
-		"di_hs_uom",
-		"di_sale_type",
-		"di_sro_serial_no",
-		"di_schedule_no",
-		"di_fed_payable",
+		"hs_code",
+		"hs_uom",
+		"sales_type",
+		"sro_serial_no",
+		"schedule_no",
+		"fed_payable",
 		"di_taxes_section",
 		"column_break_di_item"
 	];

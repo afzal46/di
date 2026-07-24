@@ -19,12 +19,8 @@ class DISettings(Document):
 		annexure_id: DF.Data | None
 		auto_post_on_submit: DF.Check
 		company: DF.Link
-		enable_pos_fiscal: DF.Check
 		enabled: DF.Check
 		ntn_cnic: DF.Data | None
-		pos_bearer_token: DF.Password | None
-		pos_environment: DF.Literal["Sandbox", "Production"]
-		pos_id: DF.Data | None
 		province: DF.Link | None
 		sale_types: DF.Table[CompanySaleType]
 		scenarios: DF.Table[CompanySandboxScenario]

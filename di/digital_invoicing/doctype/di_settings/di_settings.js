@@ -4,17 +4,7 @@ frappe.ui.form.on("DI Settings", {
 			di_settings_add_sync_buttons(frm);
 		}
 
-		frm.toggle_display("pos_id", frm.doc.enable_pos_fiscal);
-		frm.toggle_display("pos_bearer_token", frm.doc.enable_pos_fiscal);
-		frm.toggle_display("pos_environment", frm.doc.enable_pos_fiscal);
-
 		frm.toggle_display("scenarios", frm.doc.sync_mode === "Sandbox");
-	},
-
-	enable_pos_fiscal(frm) {
-		frm.toggle_display("pos_id", frm.doc.enable_pos_fiscal);
-		frm.toggle_display("pos_bearer_token", frm.doc.enable_pos_fiscal);
-		frm.toggle_display("pos_environment", frm.doc.enable_pos_fiscal);
 	},
 
 	sync_mode(frm) {

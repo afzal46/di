@@ -1,8 +1,3 @@
-"""FBR Digital Invoicing API integration (PRAL DI API v1.12).
-
-Handles both postinvoicedata and validateinvoicedata endpoints.
-"""
-
 import json
 from dataclasses import asdict, dataclass
 from decimal import ROUND_HALF_UP, Decimal
@@ -61,30 +56,30 @@ class InvoiceItem:
 	fixedNotifiedValueOrRetailPrice: float
 
 
-def _as_decimal(value) -> Decimal:
+def as_decimal(value) -> Decimal:
 	if value in (None, ""):
 		return Decimal("0")
 	return Decimal(str(value))
 
 
-def _round_currency(value) -> float:
-	return float(_as_decimal(value).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
+def round_currency(value) -> float:
+	return float(as_decimal(value).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
 
 
-def _format_rate(percentage, sale_type) -> str:
+def format_rate(percentage, sale_type) -> str:
 	if sale_type == "Exempt goods":
 		return "Exempt"
-	normalized = _as_decimal(percentage).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP).normalize()
+	normalized = as_decimal(percentage).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP).normalize()
 	rate_text = format(normalized, "f").rstrip("0").rstrip(".")
 	return f"{rate_text or '0'}%"
 
 
-def _safe_str(value) -> str:
+def safe_str(value) -> str:
 	return "" if value in (None, "") else str(value)
 
 
 def post_invoice(doc, resync=False):
-	"""Submit invoice to FBR DI API (postinvoicedata)."""
+	"""Submit invoice to FBR DI API."""
 	settings = _get_settings(doc.company)
 	if not settings:
 		return
@@ -160,7 +155,7 @@ def validate_invoice(doc):
 
 def build_di_payload(doc):
 	"""Build the DI API JSON payload from an ERPNext invoice document."""
-	info = _get_configurations(
+	info = get_configurations(
 		doc.get("customer", default=None),
 		doc.get("supplier", default=None),
 		doc.company,
@@ -196,7 +191,7 @@ def build_di_payload(doc):
 		buyerProvince=(info["customer"]["province"] if not is_purchase else info["company"]["province"]),
 		buyerAddress=(info["customer"]["address"] if not is_purchase else info["company"]["address"]),
 		invoiceRefNo=invoice_ref_no,
-		items=_build_invoice_items(doc),
+		items=build_invoice_items(doc),
 	)
 
 	return asdict(invoice)
@@ -304,7 +299,7 @@ def _handle_error(doc, payload, response):
 	frappe.throw(_("Digital Invoicing Error:\n{0}").format(error_msg))
 
 
-def _get_configurations(customer, supplier, company):
+def get_configurations(customer, supplier, company):
 	customer_doc = frappe.get_doc("Customer", customer) if customer else None
 	supplier_doc = frappe.get_doc("Supplier", supplier) if supplier else None
 
@@ -316,34 +311,34 @@ def _get_configurations(customer, supplier, company):
 
 	return {
 		"customer": {
-			"ntncnic": _safe_str(customer_doc.get("ntn_cnic")) if customer_doc else "",
-			"business_name": _safe_str(customer_doc.get("customer_name")) if customer_doc else "",
-			"registration_type": _safe_str(customer_doc.get("registration_type")) if customer_doc else "",
-			"province": _safe_str(customer_doc.get("province")) if customer_doc else "",
-			"address": _safe_str(customer_doc.get("di_address")) if customer_doc else "",
+			"ntncnic": safe_str(customer_doc.get("ntn_cnic")) if customer_doc else "",
+			"business_name": safe_str(customer_doc.get("customer_name")) if customer_doc else "",
+			"registration_type": safe_str(customer_doc.get("registration_type")) if customer_doc else "",
+			"province": safe_str(customer_doc.get("province")) if customer_doc else "",
+			"address": safe_str(customer_doc.get("di_address")) if customer_doc else "",
 		}
 		if customer_doc
 		else {"ntncnic": "", "business_name": "", "registration_type": "", "province": "", "address": ""},
 		"supplier": {
-			"ntncnic": _safe_str(supplier_doc.get("tax_id")) if supplier_doc else "",
-			"business_name": _safe_str(supplier_doc.get("supplier_name")) if supplier_doc else "",
-			"registration_type": _safe_str(supplier_doc.get("registration_type")) if supplier_doc else "",
-			"province": _safe_str(supplier_doc.get("province")) if supplier_doc else "",
-			"address": _safe_str(supplier_doc.get("di_address")) if supplier_doc else "",
+			"ntncnic": safe_str(supplier_doc.get("tax_id")) if supplier_doc else "",
+			"business_name": safe_str(supplier_doc.get("supplier_name")) if supplier_doc else "",
+			"registration_type": safe_str(supplier_doc.get("registration_type")) if supplier_doc else "",
+			"province": safe_str(supplier_doc.get("province")) if supplier_doc else "",
+			"address": safe_str(supplier_doc.get("di_address")) if supplier_doc else "",
 		}
 		if supplier_doc
 		else {"ntncnic": "", "business_name": "", "registration_type": "", "province": "", "address": ""},
 		"company": {
-			"ntncnic": _safe_str(settings.ntn_cnic if settings else company_doc.get("tax_id")),
-			"business_name": _safe_str(company_doc.get("company_name")),
-			"province": _safe_str(settings.province if settings else ""),
-			"address": _safe_str(settings.address if settings else ""),
+			"ntncnic": safe_str(settings.ntn_cnic if settings else company_doc.get("tax_id")),
+			"business_name": safe_str(company_doc.get("company_name")),
+			"province": safe_str(settings.province if settings else ""),
+			"address": safe_str(settings.address if settings else ""),
 		},
 	}
 
 
-def _get_taxes(taxes_lines):
-	"""Organize item-wise tax data keyed by di_tax_type."""
+def get_taxes(taxes_lines):
+	"""Organize item-wise tax data keyed by tax_type."""
 	itemised_tax = {}
 
 	for tax in taxes_lines:
@@ -351,7 +346,7 @@ def _get_taxes(taxes_lines):
 		if not item_tax_map:
 			continue
 
-		tax_type_key = tax.get("di_tax_type") or ""
+		tax_type_key = tax.get("tax_type") or ""
 		if not tax_type_key:
 			continue
 
@@ -376,11 +371,20 @@ def _get_taxes(taxes_lines):
 	return itemised_tax
 
 
-def _build_invoice_items(doc):
+def get_di_quantity(line, qty):
+	uom = safe_str(line.get("uom", "")).lower()
+	if uom == "bag":
+		return round(qty * flt(line.get("unit_size") or 1), 4)
+	if uom == "packet":
+		return round(qty * flt(line.get("packet_size") or 1), 4)
+	return round(qty, 4)
+
+
+def build_invoice_items(doc):
 	"""Transform invoice line items to FBR DI format."""
-	item_taxes = _get_taxes(doc.taxes)
+	item_taxes = get_taxes(doc.taxes)
 	invoice_items = []
-	conversion_rate = _as_decimal(doc.get("conversion_rate") or 1)
+	conversion_rate = as_decimal(doc.get("conversion_rate") or 1)
 
 	for line in doc.items:
 		item_code = line.get("item_code")
@@ -390,50 +394,51 @@ def _build_invoice_items(doc):
 		extra_tax = tax_data.get("Advance Tax", {"percentage": 0.0, "amount": 0.0})
 
 		qty = flt(line.get("qty", 0))
-		value_excl_st = _round_currency(line.get("base_net_amount") or line.get("net_amount", 0))
+		value_excl_st = round_currency(line.get("base_net_amount") or line.get("net_amount", 0))
 
-		sales_tax = _round_currency(
-			_as_decimal(value_excl_st) * _as_decimal(gst["percentage"]) / Decimal("100")
+		sales_tax = round_currency(
+			as_decimal(value_excl_st) * as_decimal(gst["percentage"]) / Decimal("100")
 		)
-		further_tax_amt = _round_currency(further_tax["amount"])
-		extra_tax_amt = _round_currency(extra_tax["amount"])
+		further_tax_amt = round_currency(further_tax["amount"])
+		extra_tax_amt = round_currency(extra_tax["amount"])
 
-		qty_decimal = _as_decimal(qty)
-		fixed_price = _round_currency(line.get("base_price_list_rate") or 0)
+		quantity = get_di_quantity(line, qty)
+		quantity_decimal = as_decimal(quantity)
+		fixed_price = round_currency(line.get("base_price_list_rate") or 0)
 		if not fixed_price:
-			fixed_price = _round_currency(_as_decimal(value_excl_st) / qty_decimal) if qty_decimal else 0.0
+			fixed_price = round_currency(as_decimal(value_excl_st) / quantity_decimal) if quantity_decimal else 0.0
 
-		discount = _as_decimal(line.get("discount_amount", 0)) * qty_decimal * conversion_rate
+		discount = as_decimal(line.get("discount_amount", 0)) * as_decimal(qty) * conversion_rate
 
-		total_values = _round_currency(
-			_as_decimal(value_excl_st)
-			+ _as_decimal(sales_tax)
-			+ _as_decimal(further_tax_amt)
-			+ _as_decimal(extra_tax_amt)
+		total_values = round_currency(
+			as_decimal(value_excl_st)
+			+ as_decimal(sales_tax)
+			+ as_decimal(further_tax_amt)
+			+ as_decimal(extra_tax_amt)
 		)
 
-		sale_type = line.get("di_sale_type") or ""
+		sale_type = line.get("sales_type") or ""
 
-		product_description = _safe_str(line.get("item_name", ""))
+		product_description = safe_str(line.get("item_name", ""))
 		row_no = line.get("idx")
 		if row_no:
 			product_description = f"{product_description} (Row {row_no})".strip()
 
 		invoice_item = InvoiceItem(
-			discount=max(_round_currency(discount), 0.0),
-			fedPayable=_round_currency(_as_decimal(line.get("di_fed_payable", 0)) * conversion_rate),
+			discount=max(round_currency(discount), 0.0),
+			fedPayable=round_currency(as_decimal(line.get("fed_payable", 0)) * conversion_rate),
 			furtherTax=further_tax_amt,
-			hsCode=_safe_str(line.get("di_hs_code", "")),
+			hsCode=safe_str(line.get("hs_code", "")),
 			extraTax=extra_tax_amt,
 			productDescription=product_description,
-			quantity=round(qty, 4),
-			rate=_format_rate(gst["percentage"], sale_type),
+			quantity=quantity,
+			rate=format_rate(gst["percentage"], sale_type),
 			salesTaxApplicable=sales_tax,
 			salesTaxWithheldAtSource=0.0,
-			sroItemSerialNo=_safe_str(line.get("di_sro_serial_no", "")),
-			sroScheduleNo=_safe_str(line.get("di_schedule_no", "")),
+			sroItemSerialNo=safe_str(line.get("sro_serial_no", "")),
+			sroScheduleNo=safe_str(line.get("schedule_no", "")),
 			totalValues=total_values,
-			uoM=_safe_str(line.get("di_hs_uom", "")),
+			uoM=safe_str(line.get("hs_uom", "")),
 			valueSalesExcludingST=value_excl_st,
 			saleType=sale_type,
 			fixedNotifiedValueOrRetailPrice=fixed_price,
