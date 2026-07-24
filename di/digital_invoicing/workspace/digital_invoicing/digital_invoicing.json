@@ -25,9 +25,9 @@
   {
    "hidden": 0,
    "is_query_report": 0,
-   "label": "DI Settings",
+   "label": "Digital Invoice Setting",
    "link_count": 0,
-   "link_to": "DI Settings",
+   "link_to": "Digital Invoice Setting",
    "link_type": "DocType",
    "onboard": 0,
    "type": "Link"
@@ -54,9 +54,9 @@
   {
    "hidden": 0,
    "is_query_report": 0,
-   "label": "DI Log",
+   "label": "Integration Log",
    "link_count": 0,
-   "link_to": "DI Log",
+   "link_to": "Integration Log",
    "link_type": "DocType",
    "onboard": 0,
    "type": "Link"
@@ -123,9 +123,9 @@
   {
    "hidden": 0,
    "is_query_report": 0,
-   "label": "Sale Type",
+   "label": "Sales Type",
    "link_count": 0,
-   "link_to": "Sale Type",
+   "link_to": "Sales Type",
    "link_type": "DocType",
    "onboard": 0,
    "type": "Link"
@@ -156,7 +156,7 @@
    "format": "{} Not Posted",
    "label": "Sales Invoice",
    "link_to": "Sales Invoice",
-   "stats_filter": "[[\"Sales Invoice\",\"is_di_posted\",\"=\",0,false],[\"Sales Invoice\",\"is_pos\",\"=\",0,false]]",
+   "stats_filter": "[[\"Sales Invoice\",\"is_posted\",\"=\",0,false],[\"Sales Invoice\",\"is_pos\",\"=\",0,false]]",
    "type": "DocType"
   },
   {

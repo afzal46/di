@@ -4,7 +4,7 @@ import frappe
 from frappe.model.document import Document
 
 
-class DILog(Document):
+class IntegrationLog(Document):
 	# begin: auto-generated types
 	# This code is auto-generated. Do not modify anything in this block.
 
@@ -13,7 +13,7 @@ class DILog(Document):
 	if TYPE_CHECKING:
 		from frappe.types import DF
 
-		api_type: DF.Literal["DI Post", "DI Validate", "POS Fiscal", "Reference", "STATL"]
+		api_type: DF.Literal["DI Post", "DI Validate", "Reference", "STATL"]
 		document_name: DF.DynamicLink | None
 		document_type: DF.Link | None
 		error_code: DF.Data | None
@@ -39,10 +39,10 @@ def create_log(
 	error_message="",
 	fbr_invoice_number="",
 ):
-	"""Create a DI Log entry for audit trail."""
+	"""Create an Integration Log entry for audit trail."""
 	frappe.get_doc(
 		{
-			"doctype": "DI Log",
+			"doctype": "Integration Log",
 			"title": title or f"{status}: {doctype} {docname}",
 			"document_type": doctype,
 			"document_name": docname,

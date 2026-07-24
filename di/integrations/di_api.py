@@ -15,7 +15,12 @@ from di.constants import (
 	INVOICE_TYPE_DEBIT_NOTE,
 	INVOICE_TYPE_SALE,
 )
-from di.digital_invoicing.doctype.di_log.di_log import create_log
+from di.digital_invoicing.doctype.integration_log.integration_log import create_log
+
+TAX_MISMATCH_ERROR = (
+	"Provided sales tax amount does not match the calculated sales tax amount. "
+	"Please ensure that the provided Sale Value is used to calculate the Sales Tax Amount for the provided Rate."
+)
 
 
 @dataclass
@@ -41,7 +46,7 @@ class InvoiceItem:
 	fedPayable: float
 	furtherTax: float
 	hsCode: str
-	extraTax: float
+	extraTax: str
 	productDescription: str
 	quantity: float
 	rate: str
@@ -62,16 +67,22 @@ def as_decimal(value) -> Decimal:
 	return Decimal(str(value))
 
 
-def round_currency(value) -> float:
-	return float(as_decimal(value).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
+def cascade_round(value, places=2) -> float:
+	return float(as_decimal(value).quantize(Decimal(10) ** -places, rounding=ROUND_HALF_UP))
+
+
+def is_exempted_item(sale_type) -> bool:
+	return sale_type == "Exempt goods"
+
+
+def is_reduced_rate_item(sale_type) -> bool:
+	return sale_type == "Goods at Reduced Rate"
 
 
 def format_rate(percentage, sale_type) -> str:
-	if sale_type == "Exempt goods":
+	if is_exempted_item(sale_type):
 		return "Exempt"
-	normalized = as_decimal(percentage).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP).normalize()
-	rate_text = format(normalized, "f").rstrip("0").rstrip(".")
-	return f"{rate_text or '0'}%"
+	return f"{int(flt(percentage))}%"
 
 
 def safe_str(value) -> str:
@@ -83,14 +94,15 @@ def post_invoice(doc, resync=False):
 	settings = _get_settings(doc.company)
 	if not settings:
 		return
-	if not resync and not settings.auto_post_on_submit:
+	if not resync and not settings.auto_post_invoices_on_submit:
 		return
 
-	payload = build_di_payload(doc)
+	item_logs = _get_item_logs_for_doc(doc)
+	payload = build_di_payload(doc, item_logs=item_logs)
 	url = _get_post_url(settings)
 	token = settings.get_password("access_token")
 
-	if settings.sync_mode == "Sandbox" and doc.get("di_scenario_id"):
+	if settings.sandbox and doc.get("di_scenario_id"):
 		payload["scenarioId"] = doc.di_scenario_id
 
 	try:
@@ -118,13 +130,14 @@ def validate_invoice(doc):
 	"""Validate invoice with FBR without posting (validateinvoicedata)."""
 	settings = _get_settings(doc.company)
 	if not settings:
-		frappe.throw(_("DI Settings not found for company {0}").format(doc.company))
+		frappe.throw(_("Digital Invoice Setting not found for company {0}").format(doc.company))
 
-	payload = build_di_payload(doc)
+	item_logs = _get_item_logs_for_doc(doc)
+	payload = build_di_payload(doc, item_logs=item_logs)
 	url = _get_validate_url(settings)
 	token = settings.get_password("access_token")
 
-	if settings.sync_mode == "Sandbox" and doc.get("di_scenario_id"):
+	if settings.sandbox and doc.get("di_scenario_id"):
 		payload["scenarioId"] = doc.di_scenario_id
 
 	try:
@@ -141,6 +154,9 @@ def validate_invoice(doc):
 		)
 		frappe.throw(_("FBR DI validation request failed: {0}").format(str(e)))
 
+	if not _is_valid_response(response):
+		_process_error_response(doc, response)
+
 	create_log(
 		doc.doctype,
 		doc.name,
@@ -153,7 +169,7 @@ def validate_invoice(doc):
 	return response
 
 
-def build_di_payload(doc):
+def build_di_payload(doc, item_logs=None):
 	"""Build the DI API JSON payload from an ERPNext invoice document."""
 	info = get_configurations(
 		doc.get("customer", default=None),
@@ -166,7 +182,7 @@ def build_di_payload(doc):
 	invoice_ref_no = ""
 	if doc.get("is_return") and doc.get("return_against"):
 		invoice_type = INVOICE_TYPE_DEBIT_NOTE
-		invoice_ref_no = frappe.db.get_value(doc.doctype, doc.return_against, "di_integration_id") or ""
+		invoice_ref_no = frappe.db.get_value(doc.doctype, doc.return_against, "integration_id") or ""
 
 	invoice = Invoice(
 		invoiceType=invoice_type if not is_purchase else "Purchase Invoice",
@@ -191,14 +207,17 @@ def build_di_payload(doc):
 		buyerProvince=(info["customer"]["province"] if not is_purchase else info["company"]["province"]),
 		buyerAddress=(info["customer"]["address"] if not is_purchase else info["company"]["address"]),
 		invoiceRefNo=invoice_ref_no,
-		items=build_invoice_items(doc),
+		items=build_invoice_items(doc, item_logs=item_logs),
 	)
 
 	return asdict(invoice)
 
 
 def _get_settings(company):
-	from di.digital_invoicing.doctype.di_settings.di_settings import get_settings, is_enabled
+	from di.digital_invoicing.doctype.digital_invoice_setting.digital_invoice_setting import (
+		get_settings,
+		is_enabled,
+	)
 
 	if not is_enabled(company):
 		return None
@@ -206,12 +225,12 @@ def _get_settings(company):
 
 
 def _get_post_url(settings):
-	path = DI_POST_SANDBOX if settings.sync_mode == "Sandbox" else DI_POST_PROD
+	path = DI_POST_SANDBOX if settings.sandbox else DI_POST_PROD
 	return f"{DI_BASE_URL}{path}"
 
 
 def _get_validate_url(settings):
-	path = DI_VALIDATE_SANDBOX if settings.sync_mode == "Sandbox" else DI_VALIDATE_PROD
+	path = DI_VALIDATE_SANDBOX if settings.sandbox else DI_VALIDATE_PROD
 	return f"{DI_BASE_URL}{path}"
 
 
@@ -235,7 +254,6 @@ def _make_request(url, payload, token):
 	try:
 		return response.json()
 	except requests.exceptions.JSONDecodeError:
-		import json
 		import re
 
 		# FBR API sometimes returns JSON with trailing commas
@@ -252,13 +270,13 @@ def _handle_success(doc, payload, response, invoice_number, resync):
 	dated = response.get("dated", now())
 
 	if resync:
-		doc.db_set("di_integration_id", invoice_number, update_modified=False)
-		doc.db_set("is_di_posted", 1, update_modified=False)
-		doc.db_set("di_posting_datetime", dated, update_modified=False)
+		doc.db_set("integration_id", invoice_number, update_modified=False)
+		doc.db_set("is_posted", 1, update_modified=False)
+		doc.db_set("posting_datetime", dated, update_modified=False)
 	else:
-		doc.di_integration_id = invoice_number
-		doc.is_di_posted = 1
-		doc.di_posting_datetime = dated
+		doc.integration_id = invoice_number
+		doc.is_posted = 1
+		doc.posting_datetime = dated
 
 	create_log(
 		doc.doctype,
@@ -285,6 +303,8 @@ def _handle_error(doc, payload, response):
 
 	error_msg = "\n".join(error_parts) if error_parts else str(response)
 
+	_process_error_response(doc, response)
+
 	create_log(
 		doc.doctype,
 		doc.name,
@@ -299,40 +319,84 @@ def _handle_error(doc, payload, response):
 	frappe.throw(_("Digital Invoicing Error:\n{0}").format(error_msg))
 
 
+def _process_error_response(doc, response):
+	"""Record a tax-rounding self-heal hint when FBR rejects an item for the
+	exact sales-tax-amount-mismatch error, so the next attempt can nudge that
+	item's computed tax by +0.01 (see get_items())."""
+	vr = response.get("validationResponse", {}) or {}
+	for item_status in vr.get("invoiceStatuses") or []:
+		if item_status.get("status") == "Valid":
+			continue
+		if item_status.get("error") != TAX_MISMATCH_ERROR:
+			continue
+		idx = item_status.get("itemSNo")
+		if not idx:
+			continue
+		if frappe.db.exists(
+			"Item Log",
+			{"reference_doctype": doc.doctype, "reference_document": doc.name, "index": idx},
+		):
+			continue
+		frappe.get_doc(
+			{
+				"doctype": "Item Log",
+				"reference_doctype": doc.doctype,
+				"reference_document": doc.name,
+				"index": idx,
+			}
+		).insert(ignore_permissions=True)
+
+
+def _get_item_logs_for_doc(doc):
+	"""Return [{item_code: idx}, ...] for lines that previously failed FBR's
+	tax-rounding validation, so get_items() can apply the self-heal."""
+	item_logs = []
+	for line in doc.items:
+		item_code = line.get("item_code")
+		idx = line.get("idx")
+		if frappe.db.exists(
+			"Item Log",
+			{"reference_doctype": doc.doctype, "reference_document": doc.name, "index": idx},
+		):
+			item_logs.append({item_code: idx})
+	return item_logs
+
+
 def get_configurations(customer, supplier, company):
 	customer_doc = frappe.get_doc("Customer", customer) if customer else None
 	supplier_doc = frappe.get_doc("Supplier", supplier) if supplier else None
-
-	settings = None
-	if frappe.db.exists("DI Settings", {"company": company}):
-		settings = frappe.get_doc("DI Settings", company)
-
 	company_doc = frappe.get_doc("Company", company)
 
+	blank = {"ntncnic": "", "business_name": "", "registration_type": "", "province": "", "address": ""}
+
 	return {
-		"customer": {
-			"ntncnic": safe_str(customer_doc.get("ntn_cnic")) if customer_doc else "",
-			"business_name": safe_str(customer_doc.get("customer_name")) if customer_doc else "",
-			"registration_type": safe_str(customer_doc.get("registration_type")) if customer_doc else "",
-			"province": safe_str(customer_doc.get("province")) if customer_doc else "",
-			"address": safe_str(customer_doc.get("di_address")) if customer_doc else "",
-		}
-		if customer_doc
-		else {"ntncnic": "", "business_name": "", "registration_type": "", "province": "", "address": ""},
-		"supplier": {
-			"ntncnic": safe_str(supplier_doc.get("tax_id")) if supplier_doc else "",
-			"business_name": safe_str(supplier_doc.get("supplier_name")) if supplier_doc else "",
-			"registration_type": safe_str(supplier_doc.get("registration_type")) if supplier_doc else "",
-			"province": safe_str(supplier_doc.get("province")) if supplier_doc else "",
-			"address": safe_str(supplier_doc.get("di_address")) if supplier_doc else "",
-		}
-		if supplier_doc
-		else {"ntncnic": "", "business_name": "", "registration_type": "", "province": "", "address": ""},
+		"customer": (
+			{
+				"ntncnic": safe_str(customer_doc.get("ntn")),
+				"business_name": safe_str(customer_doc.get("customer_name")),
+				"registration_type": safe_str(customer_doc.get("registration_type")),
+				"province": safe_str(customer_doc.get("province")),
+				"address": safe_str(customer_doc.get("address")),
+			}
+			if customer_doc
+			else blank
+		),
+		"supplier": (
+			{
+				"ntncnic": safe_str(supplier_doc.get("tax_id")),
+				"business_name": safe_str(supplier_doc.get("supplier_name")),
+				"registration_type": safe_str(supplier_doc.get("registration_type")),
+				"province": safe_str(supplier_doc.get("province")),
+				"address": safe_str(supplier_doc.get("address")),
+			}
+			if supplier_doc
+			else blank
+		),
 		"company": {
-			"ntncnic": safe_str(settings.ntn_cnic if settings else company_doc.get("tax_id")),
+			"ntncnic": safe_str(company_doc.get("tax_id")),
 			"business_name": safe_str(company_doc.get("company_name")),
-			"province": safe_str(settings.province if settings else ""),
-			"address": safe_str(settings.address if settings else ""),
+			"province": safe_str(company_doc.get("province")),
+			"address": safe_str(company_doc.get("address")),
 		},
 	}
 
@@ -371,20 +435,31 @@ def get_taxes(taxes_lines):
 	return itemised_tax
 
 
+def _get_item_unit_packet_size(item_code):
+	if not item_code:
+		return 1, 1
+	values = frappe.db.get_value("Item", item_code, ["unit_size", "packet_size"])
+	if not values:
+		return 1, 1
+	unit_size, packet_size = values
+	return flt(unit_size) or 1, flt(packet_size) or 1
+
+
 def get_di_quantity(line, qty):
-	uom = safe_str(line.get("uom", "")).lower()
-	if uom == "bag":
-		return round(qty * flt(line.get("unit_size") or 1), 4)
-	if uom == "packet":
-		return round(qty * flt(line.get("packet_size") or 1), 4)
-	return round(qty, 4)
+	hs_uom = safe_str(line.get("hs_uom", "")).lower()
+	if hs_uom == "bag":
+		unit_size, _packet_size = _get_item_unit_packet_size(line.get("item_code"))
+		return cascade_round(qty * unit_size)
+	if hs_uom == "packet":
+		_unit_size, packet_size = _get_item_unit_packet_size(line.get("item_code"))
+		return cascade_round(qty * packet_size)
+	return cascade_round(qty)
 
 
-def build_invoice_items(doc):
+def build_invoice_items(doc, item_logs=None):
 	"""Transform invoice line items to FBR DI format."""
 	item_taxes = get_taxes(doc.taxes)
 	invoice_items = []
-	conversion_rate = as_decimal(doc.get("conversion_rate") or 1)
 
 	for line in doc.items:
 		item_code = line.get("item_code")
@@ -394,52 +469,59 @@ def build_invoice_items(doc):
 		extra_tax = tax_data.get("Advance Tax", {"percentage": 0.0, "amount": 0.0})
 
 		qty = flt(line.get("qty", 0))
-		value_excl_st = round_currency(line.get("base_net_amount") or line.get("net_amount", 0))
+		sale_type = line.get("sales_type") or ""
+		net_amount = cascade_round(line.get("base_net_amount") or line.get("net_amount", 0))
 
-		sales_tax = round_currency(
-			as_decimal(value_excl_st) * as_decimal(gst["percentage"]) / Decimal("100")
-		)
-		further_tax_amt = round_currency(further_tax["amount"])
-		extra_tax_amt = round_currency(extra_tax["amount"])
+		if is_exempted_item(sale_type):
+			sales_tax_amount = 0.0
+		else:
+			sales_tax_amount = cascade_round(
+				as_decimal(net_amount) * as_decimal(gst["percentage"]) / Decimal("100")
+			)
+
+		item_log_index = None
+		for log_entry in item_logs or []:
+			if item_code in log_entry:
+				item_log_index = log_entry[item_code]
+				break
+		if item_log_index and sales_tax_amount > 0:
+			sales_tax_amount = cascade_round(as_decimal(sales_tax_amount) + Decimal("0.01"))
+
+		further_tax_amount = cascade_round(further_tax["amount"])
+		extra_tax_amount = cascade_round(extra_tax["amount"])
 
 		quantity = get_di_quantity(line, qty)
 		quantity_decimal = as_decimal(quantity)
-		fixed_price = round_currency(line.get("base_price_list_rate") or 0)
-		if not fixed_price:
-			fixed_price = round_currency(as_decimal(value_excl_st) / quantity_decimal) if quantity_decimal else 0.0
-
-		discount = as_decimal(line.get("discount_amount", 0)) * as_decimal(qty) * conversion_rate
-
-		total_values = round_currency(
-			as_decimal(value_excl_st)
-			+ as_decimal(sales_tax)
-			+ as_decimal(further_tax_amt)
-			+ as_decimal(extra_tax_amt)
+		fixed_price = (
+			cascade_round(as_decimal(net_amount) / quantity_decimal) if quantity_decimal else 0.0
 		)
 
-		sale_type = line.get("sales_type") or ""
+		discount_amount = line.get("discount_amount", 0)
+		discount = cascade_round(as_decimal(discount_amount) * as_decimal(qty)) if flt(discount_amount) >= 0 else 0
 
-		product_description = safe_str(line.get("item_name", ""))
-		row_no = line.get("idx")
-		if row_no:
-			product_description = f"{product_description} (Row {row_no})".strip()
+		total_values = cascade_round(
+			as_decimal(net_amount)
+			+ as_decimal(sales_tax_amount)
+			+ as_decimal(further_tax_amount)
+			+ as_decimal(extra_tax_amount)
+		)
 
 		invoice_item = InvoiceItem(
-			discount=max(round_currency(discount), 0.0),
-			fedPayable=round_currency(as_decimal(line.get("fed_payable", 0)) * conversion_rate),
-			furtherTax=further_tax_amt,
+			discount=discount,
+			fedPayable=cascade_round(line.get("fed_payable", 0)),
+			furtherTax=further_tax_amount,
 			hsCode=safe_str(line.get("hs_code", "")),
-			extraTax=extra_tax_amt,
-			productDescription=product_description,
+			extraTax="" if is_reduced_rate_item(sale_type) else "0",
+			productDescription=f'{line.get("item_code")}: {safe_str(line.get("item_name", ""))} ({line.get("idx", "")})',
 			quantity=quantity,
 			rate=format_rate(gst["percentage"], sale_type),
-			salesTaxApplicable=sales_tax,
-			salesTaxWithheldAtSource=0.0,
+			salesTaxApplicable=sales_tax_amount,
+			salesTaxWithheldAtSource=0,
 			sroItemSerialNo=safe_str(line.get("sro_serial_no", "")),
 			sroScheduleNo=safe_str(line.get("schedule_no", "")),
 			totalValues=total_values,
 			uoM=safe_str(line.get("hs_uom", "")),
-			valueSalesExcludingST=value_excl_st,
+			valueSalesExcludingST=net_amount,
 			saleType=sale_type,
 			fixedNotifiedValueOrRetailPrice=fixed_price,
 		)

@@ -5,5 +5,5 @@
 from frappe.tests.utils import FrappeTestCase
 
 
-class TestDISettings(FrappeTestCase):
+class TestDigitalInvoiceSetting(FrappeTestCase):
 	pass

@@ -9,21 +9,12 @@
   "enabled",
   "company",
   "column_break_general",
-  "sync_mode",
-  "auto_post_on_submit",
+  "auto_post_invoices_on_submit",
+  "sandbox",
   "di_api_tab",
   "di_api_section",
   "access_token",
-  "company_info_tab",
-  "company_info_section",
-  "ntn_cnic",
-  "strn_no",
   "annexure_id",
-  "column_break_company",
-  "province",
-  "address",
-  "sale_types_tab",
-  "sale_types",
   "scenarios_tab",
   "scenarios",
   "reference_data_tab",
@@ -58,17 +49,17 @@
    "fieldtype": "Column Break"
   },
   {
-   "default": "Sandbox",
-   "fieldname": "sync_mode",
-   "fieldtype": "Select",
-   "label": "Sync Mode",
-   "options": "Production\nSandbox"
+   "default": "1",
+   "fieldname": "auto_post_invoices_on_submit",
+   "fieldtype": "Check",
+   "label": "Auto Post Invoices on submit"
   },
   {
-   "default": "1",
-   "fieldname": "auto_post_on_submit",
+   "default": "0",
+   "description": "Sandbox and Production routing is based on the access token being used.",
+   "fieldname": "sandbox",
    "fieldtype": "Check",
-   "label": "Auto Post on Submit"
+   "label": "Sandbox Mode"
   },
   {
    "fieldname": "di_api_tab",
@@ -83,53 +74,13 @@
   {
    "fieldname": "access_token",
    "fieldtype": "Password",
-   "label": "Access Token (Bearer)"
+   "label": "Access Token (Bearer)",
+   "mandatory_depends_on": "eval:doc.enabled"
   },
   {
-   "fieldname": "company_info_tab",
-   "fieldtype": "Tab Break",
-   "label": "Company Info"
-  },
-  {
-   "fieldname": "company_info_section",
-   "fieldtype": "Section Break",
-   "label": "Company Information"
-  },
-  {
-   "fieldname": "ntn_cnic",
+   "fieldname": "annexure_id",
    "fieldtype": "Data",
-   "label": "NTN / CNIC"
-  },
-  {
-   "fieldname": "strn_no",
-   "fieldtype": "Data",
-   "label": "STRN No"
-  },
-  {
-   "fieldname": "column_break_company",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "province",
-   "fieldtype": "Link",
-   "label": "Province",
-   "options": "Province"
-  },
-  {
-   "fieldname": "address",
-   "fieldtype": "Data",
-   "label": "Address"
-  },
-  {
-   "fieldname": "sale_types_tab",
-   "fieldtype": "Tab Break",
-   "label": "Sale Types"
-  },
-  {
-   "fieldname": "sale_types",
-   "fieldtype": "Table",
-   "label": "Company Sale Types",
-   "options": "Company Sale Type"
+   "label": "Sales Annexure ID"
   },
   {
    "fieldname": "scenarios_tab",
@@ -162,23 +113,18 @@
    "fieldname": "sync_hs_codes_html",
    "fieldtype": "HTML",
    "label": " "
-  },
-  {
-   "fieldname": "annexure_id",
-   "fieldtype": "Data",
-   "label": "Sales Annexure ID"
   }
  ],
  "links": [
   {
-   "link_doctype": "DI Log",
+   "link_doctype": "Integration Log",
    "link_fieldname": "document_type"
   }
  ],
- "modified": "2026-06-11 17:00:02.706466",
+ "modified": "2026-07-24 00:00:00.000000",
  "modified_by": "Administrator",
  "module": "Digital Invoicing",
- "name": "DI Settings",
+ "name": "Digital Invoice Setting",
  "naming_rule": "By fieldname",
  "owner": "Administrator",
  "permissions": [

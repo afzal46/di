@@ -45,7 +45,7 @@ function di_toggle_section(frm) {
 	}
 
 	frappe
-		.xcall("di.digital_invoicing.doctype.di_settings.di_settings.is_enabled", {
+		.xcall("di.digital_invoicing.doctype.digital_invoice_setting.digital_invoice_setting.is_enabled", {
 			company: frm.doc.company
 		})
 		.then((enabled) => {
@@ -74,8 +74,8 @@ function _apply_di_visibility(frm, show) {
 	_toggle_di_item_fields(frm, show);
 
 	if (show) {
-		frappe.db.get_value("DI Settings", { company: frm.doc.company }, "sync_mode").then((r) => {
-			if (r && r.message && r.message.sync_mode === "Sandbox") {
+		frappe.db.get_value("Digital Invoice Setting", { company: frm.doc.company }, "sandbox").then((r) => {
+			if (r && r.message && cint(r.message.sandbox)) {
 				frm.toggle_display("di_scenario_id", true);
 			}
 		});
@@ -106,7 +106,7 @@ function di_add_buttons(frm) {
 	frappe.db.get_value("Customer", frm.doc.customer, "enable_digital_invoicing").then((r) => {
 		if (!r || !r.message || !cint(r.message.enable_digital_invoicing)) return;
 
-		if (!frm.doc.is_di_posted && !frm.doc.di_integration_id) {
+		if (!frm.doc.is_posted && !frm.doc.integration_id) {
 			frm.add_custom_button(
 				__("DI Preview"),
 				() => {
@@ -133,7 +133,7 @@ function di_add_buttons(frm) {
 				__("Digital Invoicing")
 			);
 
-			if (!frm.doc.is_di_posted) {
+			if (!frm.doc.is_posted) {
 				frm.add_custom_button(
 					__("Post to FBR"),
 					() => {
@@ -205,10 +205,10 @@ function di_add_buttons(frm) {
 function di_show_qr(frm) {
 	if (_is_pos_invoice(frm)) return;
 
-	if (frm.doc.di_integration_id && frm.doc.is_di_posted) {
+	if (frm.doc.integration_id && frm.doc.is_posted) {
 		frappe
 			.xcall("di.api.get_qr_code", {
-				integration_id: frm.doc.di_integration_id
+				integration_id: frm.doc.integration_id
 			})
 			.then((qr_data) => {
 				if (!qr_data) return;
@@ -216,7 +216,7 @@ function di_show_qr(frm) {
 					<div style="text-align:center;padding:10px;">
 						<img src="${qr_data}" style="width:96px;height:96px;" />
 						<p style="margin-top:5px;font-size:11px;color:#888;">
-							FBR: ${frm.doc.di_integration_id || ""}
+							FBR: ${frm.doc.integration_id || ""}
 						</p>
 					</div>
 				`;
@@ -226,7 +226,7 @@ function di_show_qr(frm) {
 			frm.set_intro("");
 			frm.set_intro(
 				`<span class="indicator-pill green">
-					<span>FBR Posted: ${frm.doc.di_integration_id}</span>
+					<span>FBR Posted: ${frm.doc.integration_id}</span>
 				</span>`,
 				"green"
 			);
@@ -238,8 +238,8 @@ function di_show_scenario(frm) {
 	if (_is_pos_invoice(frm)) return;
 
 	if (frm.doc.docstatus === 0 && frm.doc.company) {
-		frappe.db.get_value("DI Settings", { company: frm.doc.company }, "sync_mode").then((r) => {
-			if (r && r.message && r.message.sync_mode === "Sandbox") {
+		frappe.db.get_value("Digital Invoice Setting", { company: frm.doc.company }, "sandbox").then((r) => {
+			if (r && r.message && cint(r.message.sandbox)) {
 				frm.toggle_display("di_scenario_id", true);
 			}
 		});

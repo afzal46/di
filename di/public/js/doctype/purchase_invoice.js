@@ -16,7 +16,7 @@ function di_pi_toggle_section(frm) {
 	}
 
 	frappe
-		.xcall("di.digital_invoicing.doctype.di_settings.di_settings.is_enabled", {
+		.xcall("di.digital_invoicing.doctype.digital_invoice_setting.digital_invoice_setting.is_enabled", {
 			company: frm.doc.company
 		})
 		.then((enabled) => {
@@ -53,7 +53,7 @@ function di_pi_add_buttons(frm) {
 		__("Digital Invoicing")
 	);
 
-	if (!frm.doc.is_di_posted) {
+	if (!frm.doc.is_posted) {
 		frm.add_custom_button(
 			__("Post to FBR"),
 			() => {

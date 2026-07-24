@@ -2,7 +2,7 @@ import frappe
 from frappe.model.document import Document
 
 
-class SandboxScenario(Document):
+class SalesType(Document):
 	# begin: auto-generated types
 	# This code is auto-generated. Do not modify anything in this block.
 
@@ -11,8 +11,8 @@ class SandboxScenario(Document):
 	if TYPE_CHECKING:
 		from frappe.types import DF
 
-		description: DF.Data | None
-		sales_type: DF.Link | None
-		scenario_id: DF.Data
+		requires_sro: DF.Check
+		sales_type_name: DF.Data
+		transaction_type_id: DF.Int
 	# end: auto-generated types
 	pass

@@ -37,10 +37,10 @@ def verify_buyer(customer):
 	"""Check buyer registration status via STATL."""
 	from di.integrations.statl import get_registration_type
 
-	ntn_cnic = frappe.db.get_value("Customer", customer, "ntn_cnic")
-	if not ntn_cnic:
+	ntn = frappe.db.get_value("Customer", customer, "ntn")
+	if not ntn:
 		frappe.throw(_("Customer {0} does not have NTN/CNIC set").format(customer))
-	return get_registration_type(ntn_cnic)
+	return get_registration_type(ntn)
 
 
 @frappe.whitelist()
@@ -98,12 +98,12 @@ def get_sale_types_for_company(doctype, txt, searchfield, start, page_len, filte
 
 	return frappe.db.sql(
 		"""
-		SELECT cst.sale_type
-		FROM `tabCompany Sale Type` cst
+		SELECT cst.sales_type
+		FROM `tabCompany Sales Type` cst
 		WHERE cst.parent = %(company)s
-			AND cst.parenttype = 'DI Settings'
-			AND cst.sale_type LIKE %(txt)s
-		ORDER BY cst.sale_type
+			AND cst.parenttype = 'Company'
+			AND cst.sales_type LIKE %(txt)s
+		ORDER BY cst.sales_type
 		LIMIT %(page_len)s OFFSET %(start)s
 		""",
 		{

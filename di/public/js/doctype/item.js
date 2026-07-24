@@ -12,7 +12,7 @@ frappe.ui.form.on("Item", {
 	},
 
 	setup(frm) {
-		frm.set_query("sale_type", () => {
+		frm.set_query("sales_type", () => {
 			let company = frappe.defaults.get_default("company");
 			if (company) {
 				return {

@@ -8,7 +8,7 @@
   "scenario_id",
   "description",
   "column_break_lggv",
-  "sale_type"
+  "sales_type"
  ],
  "fields": [
   {
@@ -26,11 +26,11 @@
    "label": "Description"
   },
   {
-   "fieldname": "sale_type",
+   "fieldname": "sales_type",
    "fieldtype": "Link",
    "in_list_view": 1,
-   "label": "Sale Type",
-   "options": "Sale Type"
+   "label": "Sales Type",
+   "options": "Sales Type"
   },
   {
    "fieldname": "column_break_lggv",

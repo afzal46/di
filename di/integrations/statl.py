@@ -9,7 +9,7 @@ from frappe import _
 from frappe.utils import cstr, today
 
 from di.constants import STATL_BASE_URL
-from di.digital_invoicing.doctype.di_log.di_log import create_log
+from di.digital_invoicing.doctype.integration_log.integration_log import create_log
 
 
 @frappe.whitelist()
@@ -137,8 +137,8 @@ def get_registration_type(registration_no, company=None):
 
 
 def _get_token(company=None):
-	"""Get bearer token from DI Settings."""
-	from di.digital_invoicing.doctype.di_settings.di_settings import get_settings
+	"""Get bearer token from Digital Invoice Setting."""
+	from di.digital_invoicing.doctype.digital_invoice_setting.digital_invoice_setting import get_settings
 
 	if not company:
 		company = frappe.defaults.get_global_default("company")
@@ -147,6 +147,6 @@ def _get_token(company=None):
 
 	settings = get_settings(company)
 	if not settings:
-		frappe.throw(_("DI Settings not found for company {0}").format(company))
+		frappe.throw(_("Digital Invoice Setting not found for company {0}").format(company))
 
 	return settings.get_password("access_token")

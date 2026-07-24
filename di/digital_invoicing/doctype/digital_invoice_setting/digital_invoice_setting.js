@@ -1,14 +1,14 @@
-frappe.ui.form.on("DI Settings", {
+frappe.ui.form.on("Digital Invoice Setting", {
 	refresh(frm) {
 		if (!frm.is_new()) {
 			di_settings_add_sync_buttons(frm);
 		}
 
-		frm.toggle_display("scenarios", frm.doc.sync_mode === "Sandbox");
+		frm.toggle_display("scenarios", cint(frm.doc.sandbox));
 	},
 
-	sync_mode(frm) {
-		frm.toggle_display("scenarios", frm.doc.sync_mode === "Sandbox");
+	sandbox(frm) {
+		frm.toggle_display("scenarios", cint(frm.doc.sandbox));
 	},
 });
 

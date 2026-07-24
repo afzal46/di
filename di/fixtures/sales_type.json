@@ -1,0 +1,184 @@
+[
+ {
+  "docstatus": 0,
+  "doctype": "Sales Type",
+  "modified": "2025-07-15 20:13:18.642715",
+  "name": "Goods as per SRO.297(|)/2023",
+  "sales_type_name": "Goods as per SRO.297(|)/2023"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Sales Type",
+  "modified": "2025-07-15 20:13:18.682596",
+  "name": "Non-Adjustable Supplies",
+  "sales_type_name": "Non-Adjustable Supplies"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Sales Type",
+  "modified": "2025-07-15 20:13:18.699421",
+  "name": "Toll Manufacturing",
+  "sales_type_name": "Toll Manufacturing"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Sales Type",
+  "modified": "2025-07-15 20:13:18.711770",
+  "name": "CNG Sales",
+  "sales_type_name": "CNG Sales"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Sales Type",
+  "modified": "2025-07-15 20:13:18.723784",
+  "name": "Potassium Chlorate",
+  "sales_type_name": "Potassium Chlorate"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Sales Type",
+  "modified": "2025-07-15 20:13:18.735869",
+  "name": "Ship breaking",
+  "sales_type_name": "Ship breaking"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Sales Type",
+  "modified": "2025-07-15 20:13:18.749273",
+  "name": "Steel melting and re-rolling",
+  "sales_type_name": "Steel melting and re-rolling"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Sales Type",
+  "modified": "2025-07-15 20:13:18.765483",
+  "name": "Telecommunication services",
+  "sales_type_name": "Telecommunication services"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Sales Type",
+  "modified": "2025-07-15 20:13:18.788183",
+  "name": "Cement /Concrete Block",
+  "sales_type_name": "Cement /Concrete Block"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Sales Type",
+  "modified": "2025-07-15 20:13:18.803982",
+  "name": "Electric Vehicle",
+  "sales_type_name": "Electric Vehicle"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Sales Type",
+  "modified": "2025-07-15 20:13:18.815966",
+  "name": "Cotton ginners",
+  "sales_type_name": "Cotton ginners"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Sales Type",
+  "modified": "2025-07-15 20:13:18.829345",
+  "name": "DTRE goods",
+  "sales_type_name": "DTRE goods"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Sales Type",
+  "modified": "2025-07-15 20:13:18.844071",
+  "name": "Exempt goods",
+  "sales_type_name": "Exempt goods"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Sales Type",
+  "modified": "2025-07-15 20:13:18.857597",
+  "name": "Services",
+  "sales_type_name": "Services"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Sales Type",
+  "modified": "2025-07-15 20:13:18.869294",
+  "name": "Services (FED in ST Mode)",
+  "sales_type_name": "Services (FED in ST Mode)"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Sales Type",
+  "modified": "2025-07-15 20:13:18.879628",
+  "name": "Goods (FED in ST Mode)",
+  "sales_type_name": "Goods (FED in ST Mode)"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Sales Type",
+  "modified": "2025-07-15 20:13:18.891177",
+  "name": "3rd Schedule Goods",
+  "sales_type_name": "3rd Schedule Goods"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Sales Type",
+  "modified": "2025-07-15 20:13:18.902892",
+  "name": "Processing/Conversion of Goods",
+  "sales_type_name": "Processing/Conversion of Goods"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Sales Type",
+  "modified": "2025-07-15 20:13:18.915614",
+  "name": "Mobile Phones",
+  "sales_type_name": "Mobile Phones"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Sales Type",
+  "modified": "2025-07-15 20:13:18.926405",
+  "name": "Gas to CNG stations",
+  "sales_type_name": "Gas to CNG stations"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Sales Type",
+  "modified": "2025-07-15 20:13:18.937738",
+  "name": "SIM",
+  "sales_type_name": "SIM"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Sales Type",
+  "modified": "2025-07-15 20:13:18.948881",
+  "name": "Electricity Supply to Retailers",
+  "sales_type_name": "Electricity Supply to Retailers"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Sales Type",
+  "modified": "2025-07-15 20:13:18.965881",
+  "name": "Petroleum Products",
+  "sales_type_name": "Petroleum Products"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Sales Type",
+  "modified": "2025-07-15 20:13:18.981360",
+  "name": "Goods at zero-rate",
+  "sales_type_name": "Goods at zero-rate"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Sales Type",
+  "modified": "2025-07-15 20:13:18.997300",
+  "name": "Goods at Reduced Rate",
+  "sales_type_name": "Goods at Reduced Rate"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Sales Type",
+  "modified": "2025-07-15 20:13:19.011311",
+  "name": "Goods at standard rate (default)",
+  "sales_type_name": "Goods at standard rate (default)"
+ }
+]

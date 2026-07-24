@@ -10,7 +10,7 @@ from frappe import _
 from frappe.utils import cstr
 
 from di.constants import REF_BASE_V1, REF_BASE_V2
-from di.digital_invoicing.doctype.di_log.di_log import create_log
+from di.digital_invoicing.doctype.integration_log.integration_log import create_log
 
 
 @frappe.whitelist()
@@ -84,7 +84,7 @@ def sync_hs_codes(company=None):
 def sync_hs_code_uoms(company=None):
 	"""Sync HS codes UOMs from FBR API."""
 	token = _get_token(company)
-	di_settings = frappe.get_doc("DI Settings", company)
+	di_settings = frappe.get_doc("Digital Invoice Setting", company)
 	for hs_code in frappe.get_list("HS Code"):
 		url = f"{REF_BASE_V1}/HS_UOM?hs_code={hs_code.name}&annexureId={di_settings.annexure_id}"
 		data = _make_get_request(url, token, "HS Code Uoms")
@@ -133,7 +133,7 @@ def sync_sale_types(company=None):
 
 	FBR exposes the master list of sale types via the `/transtypecode` reference
 	endpoint (the same descriptions that go into the invoice payload's
-	`saleType` field). The `transactioN_TYPE_ID` is retained on the Sale Type
+	`saleType` field). The `transactioN_TYPE_ID` is retained on the Sales Type
 	record so it can be used as `transTypeId` against the v2 SaleTypeToRate API.
 	"""
 	token = _get_token(company)
@@ -147,15 +147,15 @@ def sync_sale_types(company=None):
 		if not desc:
 			continue
 
-		if frappe.db.exists("Sale Type", desc):
-			doc = frappe.get_doc("Sale Type", desc)
+		if frappe.db.exists("Sales Type", desc):
+			doc = frappe.get_doc("Sales Type", desc)
 			doc.transaction_type_id = type_id
 			doc.save(ignore_permissions=True)
 		else:
 			frappe.get_doc(
 				{
-					"doctype": "Sale Type",
-					"sale_type_name": desc,
+					"doctype": "Sales Type",
+					"sales_type_name": desc,
 					"transaction_type_id": type_id,
 				}
 			).insert(ignore_permissions=True)
@@ -254,7 +254,7 @@ def sync_sale_type_rates(date=None, trans_type_id=None, origination_supplier=Non
 
 def _get_token(company=None):
 	"""Get the DI bearer token from settings."""
-	from di.digital_invoicing.doctype.di_settings.di_settings import get_settings
+	from di.digital_invoicing.doctype.digital_invoice_setting.digital_invoice_setting import get_settings
 
 	if not company:
 		company = frappe.defaults.get_global_default("company")
@@ -263,7 +263,7 @@ def _get_token(company=None):
 
 	settings = get_settings(company)
 	if not settings:
-		frappe.throw(_("DI Settings not found for company {0}").format(company))
+		frappe.throw(_("Digital Invoice Setting not found for company {0}").format(company))
 
 	return settings.get_password("access_token")
 
@@ -282,7 +282,7 @@ def _make_get_request(url, token, data_type, params=None):
 		)
 	except requests.RequestException as e:
 		create_log(
-			"DI Settings",
+			"Digital Invoice Setting",
 			"",
 			{"url": url, "params": params},
 			str(e),
@@ -314,7 +314,7 @@ def _make_get_request(url, token, data_type, params=None):
 		data = [data] if data else []
 
 	create_log(
-		"DI Settings",
+		"Digital Invoice Setting",
 		"",
 		{"url": url, "params": params},
 		{"count": len(data)},
