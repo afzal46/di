@@ -1,0 +1,88 @@
+{
+ "actions": [],
+ "autoname": "field:sale_type_name",
+ "creation": "2025-05-15 10:00:00",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "transaction_type_id",
+  "sale_type_name",
+  "column_break_npxx",
+  "requires_sro"
+ ],
+ "fields": [
+  {
+   "fieldname": "sale_type_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Sale Type Name",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "transaction_type_id",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Transaction Type ID"
+  },
+  {
+   "default": "0",
+   "fieldname": "requires_sro",
+   "fieldtype": "Check",
+   "label": "Requires SRO"
+  },
+  {
+   "fieldname": "column_break_npxx",
+   "fieldtype": "Column Break"
+  }
+ ],
+ "links": [],
+ "modified": "2026-06-11 16:58:16.058872",
+ "modified_by": "Administrator",
+ "module": "Digital Invoicing",
+ "name": "Sale Type",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "read": 1,
+   "role": "Accounts Manager",
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Accounts User",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "read": 1,
+   "role": "Desk User"
+  }
+ ],
+ "quick_entry": 1,
+ "row_format": "Dynamic",
+ "sort_field": "sale_type_name",
+ "sort_order": "ASC",
+ "states": [],
+ "title_field": "sale_type_name",
+ "track_changes": 1
+}
