@@ -1,3 +1,45 @@
+frappe.provide("digclient.digital_invoice_preview");
+
+digclient.digital_invoice_preview.make_dialog = function (invoice) {
+
+    const columns = [
+        { name: "HS Code", id: "hsCode", width: 100, editable: false },
+        { name: "Description", id: "productDescription", width: 200, editable: false },
+        { name: "Qty", id: "quantity", width: 80, editable: false },
+        { name: "Rate", id: "fixedNotifiedValueOrRetailPrice", width: 100, editable: false },
+        { name: "Discount", id: "discount", width: 100, editable: false },
+        { name: "Amount", id: "valueSalesExcludingST", width: 120, editable: false },
+        { name: "Sales Tax Rate", id: "rate", width: 120, editable: false },
+        { name: "Sales Tax Amount", id: "salesTaxApplicable", width: 120, editable: false },
+        { name: "Further Tax", id: "furtherTax", width: 120, editable: false },
+        { name: "Extra Tax", id: "extraTax", width: 120, editable: false },
+        { name: "Total", id: "totalValues", width: 120, editable: false },
+    ];
+
+    let dialog = new frappe.ui.Dialog({
+        size: "extra-large",
+        title: __("Digital Invoice Preview"),
+        fields: [{ fieldtype: "HTML", fieldname: "preview_html" }],
+    });
+    setTimeout(function () {
+        new frappe.DataTable(dialog.get_field("preview_html").wrapper, {
+            columns: columns,
+            data: invoice.items,
+            dynamicRowHeight: false,
+            checkboxColumn: false,
+            inlineFilters: false,
+        });
+        const datatable = new frappe.DataTable(dialog.get_field("preview_html").wrapper, {
+            dynamicRowHeight: false,
+            checkboxColumn: false,
+            inlineFilters: false,
+        });
+        datatable.refresh(invoice, columns);
+    }, 200);
+
+    dialog.show();
+};
+
 frappe.ui.form.on("Sales Invoice", {
 	refresh(frm) {
 		di_toggle_section(frm);
@@ -116,18 +158,7 @@ function di_add_buttons(frm) {
 							name: frm.doc.name
 						})
 						.then((payload) => {
-							let d = new frappe.ui.Dialog({
-								title: __("Digital Invoice Preview"),
-								size: "extra-large"
-							});
-							d.$body.html(
-								`<pre style="max-height:500px;overflow:auto;font-size:12px;">${JSON.stringify(
-									payload,
-									null,
-									2
-								)}</pre>`
-							);
-							d.show();
+							digclient.digital_invoice_preview.make_dialog(payload)
 						});
 				},
 				__("Digital Invoicing")
