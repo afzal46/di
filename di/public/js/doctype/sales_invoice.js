@@ -34,7 +34,7 @@ digclient.digital_invoice_preview.make_dialog = function (invoice) {
             checkboxColumn: false,
             inlineFilters: false,
         });
-        datatable.refresh(invoice, columns);
+        datatable.refresh(invoice.items, columns);
     }, 200);
 
     dialog.show();
