@@ -152,9 +152,8 @@ def setup_custom_fields():
 			dict(
 				fieldname="integration_id",
 				label="FBR Invoice Number",
-				fieldtype="Data",
+				fieldtype="Read Only",
 				insert_after="di_section",
-				read_only=1,
 			),
 			dict(
 				fieldname="is_posted",
@@ -235,20 +234,16 @@ def setup_custom_fields():
 			dict(
 				fieldname="sro_serial_no",
 				label="SRO Serial No",
-				fieldtype="Data",
+				fieldtype="Read Only",
 				insert_after="column_break_di_item",
 				fetch_from="item_code.sro_item_serial_no",
-				read_only=1,
-				allow_on_submit=1,
 			),
 			dict(
 				fieldname="schedule_no",
 				label="SRO Schedule No",
-				fieldtype="Data",
+				fieldtype="Read Only",
 				insert_after="sro_serial_no",
 				fetch_from="item_code.sro_schedule_no",
-				read_only=1,
-				allow_on_submit=1,
 			),
 			dict(
 				fieldname="fed_payable",
@@ -269,9 +264,8 @@ def setup_custom_fields():
 			dict(
 				fieldname="integration_id",
 				label="FBR Invoice Number",
-				fieldtype="Data",
+				fieldtype="Read Only",
 				insert_after="di_section",
-				read_only=1,
 			),
 			dict(
 				fieldname="is_posted",
@@ -297,12 +291,9 @@ def setup_custom_fields():
 			dict(
 				fieldname="hs_code",
 				label="HS Code",
-				fieldtype="Link",
-				options="HS Code",
+				fieldtype="Read Only",
 				insert_after="item_name",
 				fetch_from="item_code.hs_code",
-				read_only=1,
-				allow_on_submit=1,
 			),
 			dict(
 				fieldname="hs_uom",
