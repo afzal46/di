@@ -438,7 +438,7 @@ def get_taxes(taxes_lines):
 def _get_item_unit_packet_size(item_code):
 	if not item_code:
 		return 1, 1
-	values = frappe.db.get_value("Item", item_code, ["unit_size", "packet_size"])
+	values = frappe.db.get_value("Item", item_code, ["unit_size", "custom_packet_size"])
 	if not values:
 		return 1, 1
 	unit_size, packet_size = values
