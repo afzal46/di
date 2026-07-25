@@ -183,7 +183,7 @@ function di_add_buttons(frm) {
 							}
 						);
 					},
-					__("Digital Invoicing")
+			
 				);
 			}
 
