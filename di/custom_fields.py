@@ -47,8 +47,8 @@ def setup_custom_fields():
 			dict(
 				fieldname="province",
 				label="Province",
-				fieldtype="Link",
-				options="Province",
+				fieldtype="Select",
+				options="PUNJAB\nBALOCHISTAN\nAZAD JAMMU AND KASHMIR\nCAPITAL TERRITORY\nKHYBER PAKHTUNKHWA\nSINDH\nGILGIT BALTISTAN",
 				insert_after="address",
 			),
 			dict(
@@ -75,8 +75,8 @@ def setup_custom_fields():
 			dict(
 				fieldname="province",
 				label="Province",
-				fieldtype="Link",
-				options="Province",
+				fieldtype="Select",
+				options="PUNJAB\nBALOCHISTAN\nAZAD JAMMU AND KASHMIR\nCAPITAL TERRITORY\nKHYBER PAKHTUNKHWA\nSINDH\nGILGIT BALTISTAN",
 				insert_after="address",
 			),
 			dict(
