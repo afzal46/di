@@ -454,8 +454,8 @@ def get_di_quantity(line, qty):
 		_unit_size, packet_size = _get_item_unit_packet_size(line.get("item_code"))
 		return cascade_round(qty * packet_size)
 	return cascade_round(qty)
-
-
+ 
+ 
 def build_invoice_items(doc, item_logs=None):
 	"""Transform invoice line items to FBR DI format."""
 	item_taxes = get_taxes(doc.taxes)
