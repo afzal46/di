@@ -1,7 +1,10 @@
 frappe.ui.form.on("Purchase Invoice", {
 	refresh(frm) {
-		di_pi_toggle_section(frm);
-		di_pi_add_buttons(frm);
+		// comment this code by ...
+		
+		// di_pi_toggle_section(frm);
+		
+		// di_pi_add_buttons(frm);
 	},
 
 	company(frm) {

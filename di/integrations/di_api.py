@@ -446,7 +446,7 @@ def _get_item_unit_packet_size(item_code):
 
 
 def get_di_quantity(line, qty):
-	hs_uom = safe_str(line.get("hs_uom", "")).lower()
+	hs_uom = safe_str(line.get("uom", "")).lower()
 	if hs_uom == "bag":
 		unit_size, _packet_size = _get_item_unit_packet_size(line.get("item_code"))
 		return cascade_round(qty * unit_size)

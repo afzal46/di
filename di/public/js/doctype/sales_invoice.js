@@ -213,22 +213,22 @@ function di_add_buttons(frm) {
 				__("Digital Invoicing")
 			);
 
-			frm.add_custom_button(
-				__("Verify Buyer"),
-				() => {
-					frappe
-						.xcall("di.api.verify_buyer", {
-							customer: frm.doc.customer
-						})
-						.then((result) => {
-							frappe.msgprint({
-								title: __("Buyer Verification"),
-								message: `<pre>${JSON.stringify(result, null, 2)}</pre>`
-							});
-						});
-				},
-				__("Digital Invoicing")
-			);
+			// frm.add_custom_button(
+			// 	__("Verify Buyer"),
+			// 	() => {
+			// 		frappe
+			// 			.xcall("di.api.verify_buyer", {
+			// 				customer: frm.doc.customer
+			// 			})
+			// 			.then((result) => {
+			// 				frappe.msgprint({
+			// 					title: __("Buyer Verification"),
+			// 					message: `<pre>${JSON.stringify(result, null, 2)}</pre>`
+			// 				});
+			// 			});
+			// 	},
+			// 	__("Digital Invoicing")
+			// );
 		}
 	});
 }
