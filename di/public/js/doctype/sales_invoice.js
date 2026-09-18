@@ -141,6 +141,10 @@ function _toggle_di_item_fields(frm, show) {
 }
 
 function di_add_buttons(frm) {
+	// this line added by afzal (to restrict the button for only DI Posting User role)
+	if (!frappe.user.has_role("DI Posting User")) return;
+	
+
 	if (frm.doc.docstatus !== 1) return;
 	if (_is_pos_invoice(frm)) return;
 	if (!frm.doc.customer) return;
@@ -255,7 +259,7 @@ function di_show_qr(frm) {
 			});
 		if (frm.dashboard) {
 			frm.set_intro("");
-			frm.set_intro(
+			frm.set_eintro(
 				`<span class="indicator-pill green">
 					<span>FBR Posted: ${frm.doc.integration_id}</span>
 				</span>`,
